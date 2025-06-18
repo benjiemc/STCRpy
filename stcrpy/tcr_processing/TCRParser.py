@@ -63,7 +63,7 @@ class TCRParser(PDBParser, MMCIFParser):
         Create a new TCR or MHC chain.
         Residues before the numbered region are now ignored.
         """
-        if chain_type in ["D", "A", "B", "G"]:
+        if chain_type in {"A", "B", "G", "D"}:
             newchain = TCRchain(new_chain_id)
         elif chain_type in [
             "MH1",
@@ -298,7 +298,7 @@ class TCRParser(PDBParser, MMCIFParser):
 
                 details["genetic_origin"] = germline_info
 
-                if numbering and chain_type in ["G", "D", "B", "A"]:
+                if numbering and chain_type in {"A",  "B", "G", "D"}:
                     # create a new TCR chain
                     newchain = self._create_chain(
                         chain, chain.id, numbering, chain_type
@@ -349,7 +349,7 @@ class TCRParser(PDBParser, MMCIFParser):
                             tcr = abTCR(chain1, chain2)
                         elif not obs_chaintypes - set(["G", "D"]):
                             tcr = gdTCR(chain1, chain2)
-                        elif not obs_chaintypes - set(["B", "D"]):
+                        elif not obs_chaintypes - set(["D", "B"]):
                             tcr = abTCR(chain1, chain2)         # initial way to deal with narci missclassification of alpha chains as delta chains
                             # tcr = dbTCR(chain1, chain2)
 
@@ -384,7 +384,7 @@ class TCRParser(PDBParser, MMCIFParser):
                         tcr = abTCR(pair[0], pair[1])
                     elif not obs_chaintypes - set(["G", "D"]):
                         tcr = gdTCR(pair[0], pair[1])
-                    elif not obs_chaintypes - set(["B", "D"]):
+                    elif not obs_chaintypes - set(["D", "B"]):
                         # tcr = dbTCR(pair[0], pair[1])
                         tcr = abTCR(pair[0], pair[1])
 
@@ -415,7 +415,7 @@ class TCRParser(PDBParser, MMCIFParser):
                         tcr = abTCR(pair[0], pair[1])
                     elif not obs_chaintypes - set(["G", "D"]):
                         tcr = gdTCR(pair[0], pair[1])
-                    elif not obs_chaintypes - set(["B", "D"]):
+                    elif not obs_chaintypes - set(["D", "B"]):
                         tcr = abTCR(pair[0], pair[1])
                         # tcr = dbTCR(pair[0], pair[1])
                     else:
@@ -824,34 +824,36 @@ class TCRParser(PDBParser, MMCIFParser):
 
             # get TCR type and get chain's hetatoms accordingly
             if isinstance(tr, TCR) and tr.get_TCR_type() == "abTCR":
-                beta_chain = tr.get_VB()
                 alpha_chain = tr.get_VA()
+                beta_chain = tr.get_VB()
 
-                antigen_hetatoms[tr.VB], antigen_sugars[tr.VB] = (
-                    self._find_chain_hetatoms(beta_chain)
-                )
                 antigen_hetatoms[tr.VA], antigen_sugars[tr.VA] = (
                     self._find_chain_hetatoms(alpha_chain)
                 )
-
-            elif isinstance(tr, TCR) and tr.get_TCR_type() == "gdTCR":
-                delta_chain = tr.get_VD()
-                gamma_chain = tr.get_VG()
-                antigen_hetatoms[tr.VD], antigen_sugars[tr.VD] = (
-                    self._find_chain_hetatoms(delta_chain)
-                )
-                antigen_hetatoms[tr.VG], antigen_sugars[tr.VG] = (
-                    self._find_chain_hetatoms(gamma_chain)
-                )
-
-            elif isinstance(tr, TCR) and tr.get_TCR_type() == "dbTCR":
-                beta_chain = tr.get_VB()
-                delta_chain = tr.get_VD()
                 antigen_hetatoms[tr.VB], antigen_sugars[tr.VB] = (
                     self._find_chain_hetatoms(beta_chain)
                 )
+
+            elif isinstance(tr, TCR) and tr.get_TCR_type() == "gdTCR":
+                gamma_chain = tr.get_VG()
+                delta_chain = tr.get_VD()
+
+                antigen_hetatoms[tr.VG], antigen_sugars[tr.VG] = (
+                    self._find_chain_hetatoms(gamma_chain)
+                )
                 antigen_hetatoms[tr.VD], antigen_sugars[tr.VD] = (
                     self._find_chain_hetatoms(delta_chain)
+                )
+
+            elif isinstance(tr, TCR) and tr.get_TCR_type() == "dbTCR":
+                delta_chain = tr.get_VD()
+                beta_chain = tr.get_VB()
+
+                antigen_hetatoms[tr.VD], antigen_sugars[tr.VD] = (
+                    self._find_chain_hetatoms(delta_chain)
+                )
+                antigen_hetatoms[tr.VB], antigen_sugars[tr.VB] = (
+                    self._find_chain_hetatoms(beta_chain)
                 )
 
             # Unpaired TCR chain
