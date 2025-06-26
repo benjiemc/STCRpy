@@ -8,7 +8,7 @@ try:
 except ModuleNotFoundError:
     pass
 
-from stcrpy.tcr_processing import TCRParser
+from stcrpy.tcr_processing import parsers
 from stcrpy.tcr_interactions.TCRpMHC_PLIP_Model_Parser import (
     TCRpMHC_PLIP_Model_Parser,
 )
@@ -20,12 +20,12 @@ class TestTCRInteractions(unittest.TestCase):
 
     def test_tcrpmhc_plip_model_parser(self):
 
-        parser = TCRParser.TCRParser()
+        parser = parsers.STCRPyParser()
 
         model_parser = TCRpMHC_PLIP_Model_Parser()
 
         test_file = "./test_files/8gvb.cif"
-        tcr = [x for x in parser.get_tcr_structure("tmp", test_file).get_TCRs()][0]
+        tcr = [x for x in parser.get_structures("tmp", test_file).get_TCRs()][0]
 
         mol, renumbering, domains = model_parser.parse_tcr_pmhc_complex(tcr)
         assert isinstance(mol, PDBComplex)
@@ -38,10 +38,10 @@ class TestTCRInteractions(unittest.TestCase):
         mol.analyze()
 
     def test_plip_parser(self):
-        parser = TCRParser.TCRParser()
+        parser = parsers.STCRPyParser()
         model_parser = TCRpMHC_PLIP_Model_Parser()
         test_file = "./test_files/8gvb.cif"
-        tcr = [x for x in parser.get_tcr_structure("tmp", test_file).get_TCRs()][0]
+        tcr = [x for x in parser.get_structures("tmp", test_file).get_TCRs()][0]
         mol, renumbering, domains = model_parser.parse_tcr_pmhc_complex(tcr)
         mol.analyze()
 
@@ -59,9 +59,9 @@ class TestTCRInteractions(unittest.TestCase):
         assert interactions[interactions.domain == "VB"].protein_number.item() == 96
 
     def test_TCR_interaction_profiler(self):
-        parser = TCRParser.TCRParser()
+        parser = parsers.STCRPyParser()
         test_file = "./test_files/8gvb.cif"
-        tcr = [x for x in parser.get_tcr_structure("tmp", test_file).get_TCRs()][0]
+        tcr = [x for x in parser.get_structures("tmp", test_file).get_TCRs()][0]
 
         interaction_profiler = TCRInteractionProfiler()
         interactions = interaction_profiler.get_interactions(tcr, renumber=True)
@@ -93,9 +93,9 @@ class TestTCRInteractions(unittest.TestCase):
         assert pathlib.Path(csv_path).exists()
 
     def test_TCR_plip_methods(self):
-        parser = TCRParser.TCRParser()
+        parser = parsers.STCRPyParser()
         test_file = "./test_files/8gvb.cif"
-        tcr = [x for x in parser.get_tcr_structure("tmp", test_file).get_TCRs()][0]
+        tcr = [x for x in parser.get_structures("tmp", test_file).get_TCRs()][0]
 
         interactions = tcr.profile_peptide_interactions()
 
@@ -110,10 +110,10 @@ class TestTCRInteractions(unittest.TestCase):
         assert interactions[interactions.domain == "VB"].protein_number.item() == 96
 
     def test_pymol_visualisation(self):
-        parser = TCRParser.TCRParser()
+        parser = parsers.STCRPyParser()
         model_parser = TCRpMHC_PLIP_Model_Parser()
         test_file = "./test_files/8gvb.cif"
-        tcr = [x for x in parser.get_tcr_structure("tmp", test_file).get_TCRs()][0]
+        tcr = [x for x in parser.get_structures("tmp", test_file).get_TCRs()][0]
         mol, renumbering, domains = model_parser.parse_tcr_pmhc_complex(tcr)
         # mol.analyze()
 
@@ -157,9 +157,9 @@ class TestTCRInteractions(unittest.TestCase):
                 )
 
     def test_create_pymol_session(self):
-        parser = TCRParser.TCRParser()
+        parser = parsers.STCRPyParser()
         test_file = "./test_files/8gvb.cif"
-        tcr = [x for x in parser.get_tcr_structure("test_8gvb", test_file).get_TCRs()][
+        tcr = [x for x in parser.get_structures("test_8gvb", test_file).get_TCRs()][
             0
         ]
 
@@ -218,9 +218,9 @@ class TestTCRInteractions(unittest.TestCase):
                 )
 
     def test_bound_tcr_interaction_visualisation_method(self):
-        parser = TCRParser.TCRParser()
+        parser = parsers.STCRPyParser()
         test_file = "./test_files/8gvb.cif"
-        tcr = [x for x in parser.get_tcr_structure("test_8gvb", test_file).get_TCRs()][
+        tcr = [x for x in parser.get_structures("test_8gvb", test_file).get_TCRs()][
             0
         ]
 
@@ -256,9 +256,9 @@ class TestTCRInteractions(unittest.TestCase):
             assert pathlib.Path(saved_session).exists()
 
     # def test_interaction_heatmap(self):           ## matplotlib pyplot kills vscode unit test suite
-    #     parser = TCRParser.TCRParser()
+    #     parser = STCRPyParser.STCRPyParser()
     #     test_file = "./test_files/8gvb.cif"
-    #     tcr = [x for x in parser.get_tcr_structure("test_8gvb", test_file).get_TCRs()][
+    #     tcr = [x for x in parser.get_structures("test_8gvb", test_file).get_TCRs()][
     #         0
     #     ]
 

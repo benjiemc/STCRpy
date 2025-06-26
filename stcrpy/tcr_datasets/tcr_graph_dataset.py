@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 
-from ..tcr_processing import TCR, TCRParser
+from ..tcr_processing import TCR, parsers
 from . import utils
 
 try:
@@ -453,10 +453,10 @@ class TCRGraphDataset(Dataset):
     def _tcr_generator(tcr_parser, tcr_pdb_iter):
         for tcr in tcr_pdb_iter:
             tcr_id = tcr.split("/")[-1].split(".")[0]
-            yield tcr_parser.get_tcr_structure(tcr_id, tcr).get_TCRs()
+            yield tcr_parser.get_structures(tcr_id, tcr).get_TCRs()
 
     def process(self):
-        tcr_parser = TCRParser.TCRParser()
+        tcr_parser = parsers.TCRParser()
         try:
             for tcr_object in self._tcr_generator(tcr_parser, self.raw_file_names):
                 for tcr in tcr_object:

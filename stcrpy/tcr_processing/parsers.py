@@ -20,7 +20,7 @@ from .annotate import annotate, extract_sequence, align_numbering
 
 from ..utils.error_stream import ErrorStream
 
-from .TCRStructure import TCRStructure
+from .TCRpMHCStructures import TCRpMHCStructures
 from .Model import Model
 from .TCR import TCR, abTCR, gdTCR
 from .MHC import MHC, MH1, MH2, CD1, MR1, scMH1, scCD1, scMH2
@@ -42,7 +42,7 @@ MHC_CUTOFF = {
 }
 
 
-class TCRParser(PDBParser, MMCIFParser):
+class STCRPyParser(PDBParser, MMCIFParser):
     def __init__(self, PERMISSIVE=True, get_header=True, QUIET=False):
         """
         Initialise the PDB parser. This is currently set to using IMGT's numbering scheme and uses the IMGT-defined CDRs.
@@ -194,7 +194,7 @@ class TCRParser(PDBParser, MMCIFParser):
 
         return newchain1, newchain2
 
-    def get_tcr_structure(
+    def get_structures(
         self, id, file, prenumbering=None, ali_dict={}, crystal_contacts=[]
     ):
         """
@@ -219,12 +219,11 @@ class TCRParser(PDBParser, MMCIFParser):
             self.warnings.write(f"Unrecognised structure file format: {file}")
             raise ValueError
 
-        # Create a new TCRStructure object
-        tcrstructure = TCRStructure(structure.id)
+        structures = TCRpMHCStructures(structure.id)
 
         # Set and analyse header information
-        tcrstructure.set_header(structure.header)
-        self._analyse_header(tcrstructure)
+        structures.set_header(structure.header)
+        self._analyse_header(structures)
 
         # iterate over the models in the structure
         # iterate backwards through the model list - delete old structure as we go
@@ -234,7 +233,7 @@ class TCRParser(PDBParser, MMCIFParser):
             # add a model to the TCR structure
             model = structure.child_list[mid]
             newmodel = Model(model.id)
-            tcrstructure.add(newmodel)
+            structures.add(newmodel)
 
             # initialise holder objects for holding TCR, MHC and non-TCR/non-MHC (antigen) chains.
             agchains = Holder("Antigen")
@@ -287,11 +286,11 @@ class TCRParser(PDBParser, MMCIFParser):
                 else:
                     numbering, chain_type, germline_info, scTCR = annotate(chain)
 
-                if chain.id in tcrstructure.header["chain_details"]:  # clean this up!!!
-                    engineered = tcrstructure.header["chain_details"][chain.id][
+                if chain.id in structures.header["chain_details"]:  # clean this up!!!
+                    engineered = structures.header["chain_details"][chain.id][
                         "engineered"
                     ]
-                    details = tcrstructure.header["chain_details"][chain.id]
+                    details = structures.header["chain_details"][chain.id]
                 else:
                     engineered = False
                     details = {"molecule": "unknown", "engineered": False}
@@ -501,9 +500,9 @@ class TCRParser(PDBParser, MMCIFParser):
         if not self.QUIET and self.warnings.log:
             sys.stderr.write("\n".join(self.warnings.log))
             sys.stderr.write("\n")
-        tcrstructure.warnings = self.warnings
+        structures.warnings = self.warnings
 
-        return tcrstructure
+        return structures
 
     def _analyse_header(self, header):
         """
@@ -511,7 +510,7 @@ class TCRParser(PDBParser, MMCIFParser):
         We add information for the various chains and have a look for engineered and hapten flags.
         Add more information to this parser.
         """
-        if isinstance(header, TCRStructure):
+        if isinstance(header, TCRpMHCStructures):
             header = header.get_header()
         elif not header:
             header = {}

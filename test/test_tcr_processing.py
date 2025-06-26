@@ -4,21 +4,21 @@ import glob
 from Bio.PDB import MMCIFParser, PDBParser
 
 import stcrpy
-from stcrpy.tcr_processing import TCRParser, abTCR, TCR, MHCchain, MHC
+from stcrpy.tcr_processing import abTCR, TCR, MHCchain, MHC, parsers
 from stcrpy.tcr_processing.annotate import annotate, AlignmentError
 
 
-class TestTCRParser(unittest.TestCase):
+class TestSTCRPyParser(unittest.TestCase):
 
     def test_imports(self):
         import stcrpy
-        from stcrpy.tcr_processing import TCRParser, abTCR, TCR, MHCchain, MHC
+        from stcrpy.tcr_processing import abTCR, TCR, MHCchain, MHC
 
     def test_get_tcr_structure_class_I(self):
-        parser = TCRParser.TCRParser()
+        parser = parsers.STCRPyParser()
 
         pdb_file = "./test_files/5hyj.pdb"
-        tcr = parser.get_tcr_structure("test", pdb_file)
+        tcr = parser.get_structures("test", pdb_file)
         assert set(["".join(sorted(x.id)) for x in tcr.get_TCRs()]) == set(["DE", "IJ"])
         assert set(["".join(sorted(x.id)) for x in tcr.get_MHCs()]) == set(["FG", "AB"])
         assert set(["".join(sorted(x.id)) for x in tcr.get_antigens()]) == set(
@@ -26,10 +26,10 @@ class TestTCRParser(unittest.TestCase):
         )
 
     def test_get_tcr_structure_class_II(self):
-        parser = TCRParser.TCRParser()
+        parser = parsers.STCRPyParser()
 
         pdb_file = "./test_files/6r0e.cif"
-        tcr = parser.get_tcr_structure("test", pdb_file)
+        tcr = parser.get_structures("test", pdb_file)
         assert set(["".join(sorted(x.id)) for x in tcr.get_TCRs()]) == set(["DE"])
         assert set(["".join(sorted(x.id)) for x in tcr.get_MHCs()]) == set(["AB"])
         assert set(["".join(sorted(x.id)) for x in tcr.get_antigens()]) == set(["C"])
@@ -53,18 +53,18 @@ class TestTCRParser(unittest.TestCase):
         assert len(badly_parsed_pdb) == 0
 
     def test_delta_beta_tcr_parsed_as_abTCR(self):
-        parser = TCRParser.TCRParser()
+        parser = parsers.STCRPyParser()
 
         pdb_file = "./test_files/DB_test_T104_rank_0_model_0_refined.pdb"
-        tcr = parser.get_tcr_structure("test", pdb_file)
+        tcr = parser.get_structures("test", pdb_file)
         assert set(["".join(sorted(x.id)) for x in tcr.get_TCRs()]) == set(["AB"])
         assert all([isinstance(x, abTCR) for x in tcr.get_TCRs()])
 
     def test_save(self):
-        parser = TCRParser.TCRParser()
+        parser = parsers.STCRPyParser()
 
         pdb_file = "./test_files/4nhu.pdb"
-        tcr = parser.get_tcr_structure("test", pdb_file)
+        tcr = parser.get_structures("test", pdb_file)
 
         from stcrpy.tcr_processing.TCRIO import TCRIO
 
@@ -79,17 +79,17 @@ class TestTCRParser(unittest.TestCase):
         pdb_file = (
             "../stcrpy/tcr_geometry/reference_data/dock_reference_1_imgt_numbered.pdb"
         )
-        tcr = parser.get_tcr_structure("test", pdb_file)
+        tcr = parser.get_structures("test", pdb_file)
         for x in tcr.get_TCRs():
             io.save(x, save_as=f"./test_files/test_{x.id}.pdb")
 
     def test_error_prone_tcrs(self):
-        parser = TCRParser.TCRParser()
-        pdb_files = glob.glob("./test_files/TCRParser_test_files/*")
+        parser = parsers.STCRPyParser()
+        pdb_files = glob.glob("./test_files/STCRPyParser_test_files/*")
         for file in pdb_files:
             pdb_id = file.split("/")[-1].split(".")[0]
             print(pdb_id)
-            tcr_structure = parser.get_tcr_structure(pdb_id, file)
+            tcr_structure = parser.get_structures(pdb_id, file)
             for tcr in tcr_structure.get_TCRs():
                 assert isinstance(tcr, TCR)
 

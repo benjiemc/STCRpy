@@ -2,17 +2,17 @@ import warnings
 import requests
 import os
 
-from ..tcr_processing import TCR
-from ..tcr_processing.TCRParser import TCRParser
+from ..tcr_processing import MHC, TCR
+from ..tcr_processing.parsers import STCRPyParser
 from .tcr_batch_operations import batch_load_TCRs, batch_yield_TCRs
 
 
 def load_TCR(tcr_structure_file, tcr_id=None):
-    tcr_parser = TCRParser()
+    tcr_parser = STCRPyParser()
     if tcr_id is None:
         tcr_id = tcr_structure_file.split("/")[-1].split(".")[0]
     tcr_structure = list(
-        tcr_parser.get_tcr_structure(tcr_id, tcr_structure_file).get_TCRs()
+        tcr_parser.get_structures(tcr_id, tcr_structure_file).get_TCRs()
     )
     if len(tcr_structure) == 1:
         return tcr_structure[0]
@@ -20,7 +20,7 @@ def load_TCR(tcr_structure_file, tcr_id=None):
 
 
 def load_TCRs(tcr_structure_files, tcr_ids=None):
-    tcr_parser = TCRParser()
+    tcr_parser = STCRPyParser()
     if isinstance(tcr_structure_files, str):  # loading single file
         tcr_id = tcr_structure_files.split("/")[-1].split(".")[
             0
@@ -30,8 +30,8 @@ def load_TCRs(tcr_structure_files, tcr_ids=None):
                 warnings.warn(f"TCR ID: {tcr_ids} for a single TCR should be type str.")
             tcr_id = tcr_ids
 
-        tcr_structure = tcr_parser.get_tcr_structure(tcr_id, tcr_structure_files)
-        return list(tcr_structure.get_TCRs())
+        tcr_structures = tcr_parser.get_structures(tcr_id, tcr_structure_files)
+        return list(tcr_structures.get_TCRs())
 
     if len(tcr_structure_files) > 10:
         warnings.warn(
@@ -49,7 +49,7 @@ def load_TCRs(tcr_structure_files, tcr_ids=None):
 
 
 def yield_TCRs(tcr_structure_files, tcr_ids=None):
-    tcr_parser = TCRParser()
+    tcr_parser = STCRPyParser()
     if isinstance(tcr_structure_files, str):  # loading single file
         tcr_id = tcr_structure_files.split("/")[-1].split(".")[
             0
@@ -59,8 +59,8 @@ def yield_TCRs(tcr_structure_files, tcr_ids=None):
                 warnings.warn(f"TCR ID: {tcr_ids} for a single TCR should be type str.")
             tcr_id = tcr_ids
 
-        tcr_structure = tcr_parser.get_tcr_structure(tcr_id, tcr_structure_files)
-        return list(tcr_structure.get_TCRs())
+        tcr_structures = tcr_parser.get_structures(tcr_id, tcr_structure_files)
+        return list(tcr_structures.get_TCRs())
 
     if tcr_ids is not None:
         if len(tcr_structure_files) == len(tcr_ids):
@@ -78,7 +78,7 @@ def fetch_TCRs(pdb_id: str) -> list[TCR]:
 
     The function first attempts to download a PDB file from the STCRDab database.
     If the PDB file is not found, it falls back to downloading a CIF file from RCSB PDB.
-    The downloaded file is then parsed using `TCRParser` to extract TCR structures.
+    The downloaded file is then parsed using `STCRPyParser` to extract TCR structures.
 
     Parameters:
         pdb_id (str): The PDB identifier of the structure to be fetched.
@@ -137,8 +137,8 @@ def fetch_TCRs(pdb_id: str) -> list[TCR]:
         else:
             print("Failed to download file")
 
-    tcr_parser = TCRParser()
-    tcrs = list(tcr_parser.get_tcr_structure(pdb_id, filename).get_TCRs())
+    tcr_parser = STCRPyParser()
+    tcrs = list(tcr_parser.get_structures(pdb_id, filename).get_TCRs())
     os.remove(filename)
 
     if len(tcrs) == 0:

@@ -15,7 +15,7 @@ class TCRIO(PDBIO):
     ):
         assert (
             tcr.__module__.split(".")[-1] == "TCR"
-        ), f"{tcr} must be type TCR, not TCRStructure"
+        ), f"{tcr} must be type TCR, not TCRpMHCStructures"
         structure_to_save = PDB.Model.Model(0)
         for chain in tcr.get_chains():
             chain.serial_num = 0

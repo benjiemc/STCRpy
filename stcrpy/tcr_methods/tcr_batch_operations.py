@@ -2,7 +2,7 @@ import warnings
 import os
 import pandas as pd
 
-from ..tcr_processing.TCRParser import TCRParser
+from ..tcr_processing.parsers import STCRPyParser
 from ..tcr_interactions.TCRInteractionProfiler import TCRInteractionProfiler
 from ..tcr_geometry.TCRGeom import TCRGeom
 from ..tcr_geometry.TCRGeomFiltering import DockingGeometryFilter
@@ -11,7 +11,7 @@ from ..tcr_formats.tcr_formats import get_sequences
 
 class TCRBatchOperator:
     def __init__(self):
-        self._tcr_parser = TCRParser()
+        self._tcr_parser = STCRPyParser()
 
     def _load_geometry_calculator(self):
         self._geometry_calculator = TCRGeom()
@@ -23,7 +23,7 @@ class TCRBatchOperator:
         for file in file_list:
             tcr_id = file.split("/")[-1].split(".")[0]
             try:
-                for tcr in self._tcr_parser.get_tcr_structure(tcr_id, file).get_TCRs():
+                for tcr in self._tcr_parser.get_structures(tcr_id, file).get_TCRs():
                     yield tcr
             except Exception as e:
                 warnings.warn(f"Loading {file} failed with error {str(e)}")
@@ -32,7 +32,7 @@ class TCRBatchOperator:
     def tcrs_from_file_dict(self, file_dict):
         for tcr_id, file in file_dict.items():
             try:
-                for tcr in self._tcr_parser.get_tcr_structure(tcr_id, file).get_TCRs():
+                for tcr in self._tcr_parser.get_structures(tcr_id, file).get_TCRs():
                     yield tcr_id, tcr
             except Exception as e:
                 warnings.warn(f"Loading {tcr_id}: {file} failed with error {str(e)}")

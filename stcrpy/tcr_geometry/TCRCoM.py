@@ -4,7 +4,7 @@ from typing import Union
 import warnings
 import numpy as np
 
-from ..tcr_processing.TCRParser import TCRParser
+from ..tcr_processing.parsers import STCRPyParser
 from ..tcr_processing.TCRIO import TCRIO
 from ..tcr_processing import abTCR, MHCchain
 
@@ -17,9 +17,9 @@ class TCRCoM:
         """Abstract class for calculating TCR centre of mass after aligning TCR:pMHC complex to reference MHC structure."""
         self.set_reffile()
 
-        tcr_parser = TCRParser()
+        tcr_parser = STCRPyParser()
         self.ref_model = list(
-            tcr_parser.get_tcr_structure("reference", self.reffile).get_TCRs()
+            tcr_parser.get_structures("reference", self.reffile).get_TCRs()
         )[0]
         self.set_reference_residues()
 

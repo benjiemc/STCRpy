@@ -14,14 +14,14 @@ from rdkit import Chem
 from Bio import BiopythonWarning, PDB
 from Bio.PDB.PDBParser import PDBParser
 
-from ..tcr_processing.TCRParser import TCRParser
+from ..tcr_processing.parsers import STCRPyParser
 from ..tcr_processing.TCR import TCR
 
 
 class TCRpMHC_PLIP_Model_Parser:
     def __init__(self, tmp_dir=None):
         self.parser = PDBParser()
-        self.tcr_parser = TCRParser()
+        self.tcr_parser = STCRPyParser()
         self.tmp_dir = tmp_dir if tmp_dir is not None else "./"
 
     def parse_tcr_pmhc_complex(

@@ -10,9 +10,9 @@ from .TCR import TCR
 from .MHC import MHC
 
 
-class TCRStructure(Entity):
+class TCRpMHCStructures(Entity):
     """
-    The TCRStructure class contains a collection of models
+    The TCRpMHCStructures class contains a collection of models
     """
 
     def __init__(self, identifier):
@@ -64,7 +64,7 @@ class TCRStructure(Entity):
         """
         Get any instance of the TCR object.
         Hierarchy:
-            TCRStructure
+            TCRpMHCStructures
                |
                |______ TCR
                |
@@ -88,7 +88,7 @@ class TCRStructure(Entity):
         """
         Get any instance of the MHC object.
         Hierarchy:
-            TCRStructure
+            TCRpMHCStructures
                |
                |______ TCR
                |

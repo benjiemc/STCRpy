@@ -1,7 +1,6 @@
 import unittest
 
 import stcrpy
-from stcrpy.tcr_processing.TCRParser import TCRParser
 from stcrpy.tcr_datasets.tcr_graph_dataset import TCRGraphConstructor, TCRGraphDataset
 
 

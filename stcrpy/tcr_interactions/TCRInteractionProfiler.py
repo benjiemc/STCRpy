@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from importlib import reload
 import numpy as np
 
-from ..tcr_processing.TCRParser import TCRParser
+from ..tcr_processing.parsers import STCRPyParser
 
 try:
     import plip
@@ -43,7 +43,7 @@ from .TCRpMHC_PLIP_Model_Parser import TCRpMHC_PLIP_Model_Parser
 class TCRInteractionProfiler:
 
     def __init__(self, **kwargs):
-        self.tcr_parser = TCRParser()
+        self.tcr_parser = STCRPyParser()
         self.model_parser = TCRpMHC_PLIP_Model_Parser()
         self.plip_parser = PLIPParser()
 

@@ -258,7 +258,7 @@ class HADDOCKResultsParser:
 
         # find chain ID of TCR to distinguish TCR from antigen
         tcr_chain_id = list(
-            tcr_parser.get_tcr_structure("tmp", docked_prediction_file).get_TCRchains()
+            tcr_parser.get_structures("tmp", docked_prediction_file).get_TCRchains()
         )[0].get_id()
         docked_prediction = bio_parser.get_structure("docked", docked_prediction_file)
 
