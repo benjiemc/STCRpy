@@ -1,3 +1,4 @@
+import tempfile
 import warnings
 import requests
 import os
@@ -72,6 +73,53 @@ def yield_TCRs(tcr_structure_files, tcr_ids=None):
     return batch_yield_TCRs(tcr_structure_files)
 
 
+def _fetch_structure(pdb_id):
+    stcrdab_base_url = "https://opig.stats.ox.ac.uk/webapps/stcrdab-stcrpred/pdb/"
+    pdb_base_url = "https://files.rcsb.org/download/"
+
+    url = stcrdab_base_url + pdb_id.lower()
+    tcr_parser = STCRPyParser()
+    found = False
+
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdb') as temp_file:
+            response = requests.get(url, stream=True, timeout=10)
+            if response.status_code == 200:
+                for chunk in response.iter_content(chunk_size=1024):
+                    # STCRDab returns '$PDB does not exist for downloading' if PDB code not found in database
+                    if b"does not exist" in chunk:
+                        break
+
+                    temp_file.write(chunk)
+
+                else:
+                    found = True
+                    temp_file.close()
+                    structures = tcr_parser.get_structures(pdb_id, temp_file.name)
+
+    except requests.exceptions.Timeout:
+        warnings.warn(f"Request to STCRDab ({url}) timed out. Trying RCSB.")
+
+    if not found:
+        # Request from RCSB data base
+        url = pdb_base_url + f"{pdb_id.upper()}.cif"
+        response = requests.get(url, stream=True, timeout=10)
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.cif') as temp_file:
+            if response.status_code == 200:
+                for chunk in response.iter_content(chunk_size=1024):
+                    temp_file.write(chunk)
+
+                temp_file.close()
+                structures = tcr_parser.get_structures(pdb_id, temp_file.name)
+
+            else:
+                msg = f'Failed to download {pdb_id}'
+                raise ValueError(msg)
+
+    return structures
+
+
 def fetch_TCRs(pdb_id: str) -> list[TCR]:
     """
     Fetches and parses a T-cell receptor (TCR) structure from the STCRDab or RCSB PDB databases.
@@ -88,60 +136,58 @@ def fetch_TCRs(pdb_id: str) -> list[TCR]:
 
     Raises:
         - A warning if no TCR structures are found in the downloaded file.
-        - Prints an error message if the file cannot be downloaded.
+        - ValueError the pdb_id cannot be downloaded.
 
     Notes:
         - STCRDab returns an error message if the requested PDB ID does not exist.
-        - The function temporarily saves the downloaded file and deletes it after parsing.
 
     Example:
         tcr = fetch_TCRs("6eqa")
 
     """
 
-    stcrdab_base_url = "https://opig.stats.ox.ac.uk/webapps/stcrdab-stcrpred/pdb/"
-    pdb_base_url = "https://files.rcsb.org/download/"
-
-    filename = f"{pdb_id.upper()}.pdb"
-
-    url = stcrdab_base_url + pdb_id.lower()
-    TCR_FOUND = False
-
-    try:
-        response = requests.get(url, stream=True, timeout=10)
-        if response.status_code == 200:
-            with open(filename, "wb") as file:
-                for chunk in response.iter_content(chunk_size=1024):
-                    file.write(chunk)
-                if (
-                    not b"does not exist" in chunk
-                ):  # STCRDab returns '$PDB does not exist for downloading' if PDB code not found in database
-                    TCR_FOUND = True
-
-    except requests.exceptions.Timeout:
-        warnings.warn(f"Request to STCRDab ({url}) timed out. Trying RCSB.")
-
-    if not TCR_FOUND:
-        if os.path.exists(filename):
-            os.remove(filename)  # remove the file written with response from STCRDab
-
-        # Request from RCSB data base
-        filename = f"{pdb_id.upper()}.cif"
-        url = pdb_base_url + filename
-        response = requests.get(url, stream=True, timeout=10)
-
-        if response.status_code == 200:
-            with open(filename, "wb") as file:
-                for chunk in response.iter_content(chunk_size=1024):
-                    file.write(chunk)
-        else:
-            print("Failed to download file")
-
-    tcr_parser = STCRPyParser()
-    tcrs = list(tcr_parser.get_structures(pdb_id, filename).get_TCRs())
-    os.remove(filename)
-
+    tcrs = list(_fetch_structure(pdb_id).get_TCRs())
     if len(tcrs) == 0:
         warnings.warn(f"No TCRs identified in {pdb_id}")
 
     return tcrs
+
+
+def fetch_mhcs(pdb_id: str) -> list[MHC]:
+    """
+    Fetches and parses a Major Histocompatibility molecule (MHC) structure from the STCRDab or RCSB PDB databases.
+
+    The function first attempts to download a PDB file from the STCRDab database.
+    If the PDB file is not found, it falls back to downloading a CIF file from RCSB PDB.
+    The downloaded file is then parsed using `STCRPyParser` to extract MHC structures.
+
+    Parameters:
+        pdb_id (str): The PDB identifier of the structure to be fetched.
+
+    Returns:
+        A list of the MHC structures found in the fetched PDB file
+
+    Raises:
+        - A warning if no MHC structures are found in the downloaded file.
+        - ValueError the pdb_id cannot be downloaded.
+
+    Notes:
+        - STCRDab returns an error message if the requested PDB ID does not exist.
+
+    Example:
+        mhc, = fetch_TCRs("6eqa")
+
+    """
+    mhcs = list(_fetch_structure(pdb_id).get_MHCs())
+    if len(mhcs) == 0:
+        warnings.warn(f"No MHCs identified in {pdb_id}")
+
+    return mhcs
+
+
+def load_mhcs(path: str, id_: str = '') -> list[MHC]:
+    """Load mhcs from PDB file."""
+    parser = STCRPyParser()
+    structures = parser.get_structures(id_, path)
+
+    return list(structures.get_MHCs())
