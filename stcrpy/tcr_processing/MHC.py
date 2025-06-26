@@ -101,6 +101,19 @@ class MHC(Entity):
     def get_allele_assignments(self):
         return {c.id: c.get_allele_assignments() for c in self.get_chains()}
 
+    def save(self, save_as=None, pmhc_only: bool = False, format: str = "pdb"):
+        """Save MHC object as PDB or MMCIF file.
+
+        Args:
+            save_as (str, optional): File path to save MHC to. Defaults to None.
+            pmhc_only (bool, optional): Whether to save MHC (and antigen) only or to include a bound TCR. Defaults to False.
+            format (str, optional): Whether to save as PDB or MMCIF. Defaults to "pdb".
+        """
+        from . import io
+
+        mhcio = io.MHCIO()
+        mhcio.save(self, save_as=save_as, pmhc_only=pmhc_only, format=format)
+
     def crop(self, *args, **kwargs):
         """Raises NotImplementedError."""
         raise NotImplementedError()

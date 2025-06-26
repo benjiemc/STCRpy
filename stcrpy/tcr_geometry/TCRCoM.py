@@ -5,7 +5,7 @@ import warnings
 import numpy as np
 
 from ..tcr_processing.parsers import STCRPyParser
-from ..tcr_processing.TCRIO import TCRIO
+from ..tcr_processing.io import TCRIO
 from ..tcr_processing import abTCR, MHCchain
 
 

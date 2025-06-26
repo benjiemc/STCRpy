@@ -278,9 +278,9 @@ class TCR(Entity):
             tcr_only (bool, optional): Whether to save TCR only or to include MHC and antigen. Defaults to False.
             format (str, optional): Whether to save as PDB or MMCIF. Defaults to "pdb".
         """
-        from . import TCRIO
+        from . import io
 
-        tcrio = TCRIO.TCRIO()
+        tcrio = io.TCRIO()
         tcrio.save(self, save_as=save_as, tcr_only=tcr_only, format=format)
 
     def get_scanning_angle(self, mode="rudolph"):

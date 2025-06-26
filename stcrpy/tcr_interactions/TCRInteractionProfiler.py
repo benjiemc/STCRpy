@@ -208,9 +208,9 @@ class TCRInteractionProfiler:
         cmd.load(pymol_session)
 
         # create temporary file containing the TCR and its MHC and antigen.
-        from ..tcr_processing import TCRIO
+        from ..tcr_processing import io
 
-        tcrio = TCRIO.TCRIO()
+        tcrio = io.TCRIO()
         tmp_file = f"tmp_for_vis_{tcr_pmhc.parent.parent.id}_{tcr_pmhc.id}.pdb"
         tcrio.save(tcr_pmhc, save_as=tmp_file)
         cmd.load(tmp_file)

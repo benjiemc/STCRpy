@@ -66,7 +66,7 @@ class TestSTCRPyParser(unittest.TestCase):
         pdb_file = "./test_files/4nhu.pdb"
         tcr = parser.get_structures("test", pdb_file)
 
-        from stcrpy.tcr_processing.TCRIO import TCRIO
+        from stcrpy.tcr_processing.io import TCRIO
 
         io = TCRIO()
 
