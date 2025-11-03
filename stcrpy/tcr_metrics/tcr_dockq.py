@@ -211,7 +211,7 @@ class TCRDockQ:
                     model.add(chain)
         return model
 
-    def tcr_dockq(self, dock: "abTCR", reference: "abTCR", save_merged_complex: bool=False) -> float:
+    def tcr_dockq(self, dock: "abTCR", reference: "abTCR", save_merged_complex: bool = False) -> dict:
         """
         Calculate DockQ metrics for a TCR-pMHC complex.
 
